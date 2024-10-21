@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Speech Converter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0078d4, #00a1f1);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 700px;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            color: #0078d4;
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .input-group {
+            margin-bottom: 1.8rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        select, textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        select:focus, textarea:focus {
+            outline: none;
+            border-color: #0078d4;
+            box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.2);
+        }
+
+        textarea {
+            height: 180px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .button {
+            background: #0078d4;
+            color: white;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .button:hover {
+            background: #005a9e;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .audio-container {
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        audio {
+            width: 100%;
+            margin-top: 1rem;
+            border-radius: 12px;
+        }
+
+        audio::-webkit-media-controls-panel {
+            background: #f0f2f5;
+        }
+
+        .download-btn {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.8rem 1.5rem;
+            background: #34a853;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(52, 168, 83, 0.2);
+        }
+
+        .download-btn:hover {
+            background: #2d8e47;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(52, 168, 83, 0.3);
+        }
+
+        .loading {
+            display: none;
+            margin-top: 1.5rem;
+            text-align: center;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 1.2rem;
+            height: 1.2rem;
+            border: 3px solid #666;
+            border-radius: 50%;
+            border-top-color: transparent;
+            animation: spin 1s linear infinite;
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .error {
+            color: #dc3545;
+            margin-top: 1.5rem;
+            text-align: center;
+            display: none;
+            padding: 1rem;
+            background: #ffe6e6;
+            border-radius: 8px;
+            font-weight: 500;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .button {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Text to Speech Converter</h1>
+        
+        <div class="input-group">
+            <label for="language">Select Language:</label>
+            <select id="language">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="hi">Hindi</option>
+                <option value="ja">Japanese</option>
+                <option value="ko">Korean</option>
+                <option value="zh">Chinese</option>
+                <option value="ru">Russian</option>
+                <option value="ar">Arabic</option>
+            </select>
+        </div>
+
+        <div class="input-group">
+            <label for="text">Enter Text:</label>
+            <textarea id="text" placeholder="Type or paste your text here..."></textarea>
+        </div>
+
+        <button id="convertBtn" class="button">Convert to Speech</button>
+        
+        <div id="loading" class="loading">Converting your text to speech...</div>
+        <div id="error" class="error"></div>
+        <div id="audioContainer" class="audio-container"></div>
+    </div>
+
+    <script>
+        const STREAMLIT_URL = 'https://cpu-v1.streamlit.app/';
+
+        async function convertToSpeech() {
+            const text = document.getElementById('text').value.trim();
+            const language = document.getElementById('language').value;
+            const convertBtn = document.getElementById('convertBtn');
+            const loading = document.getElementById('loading');
+            const error = document.getElementById('error');
+            const audioContainer = document.getElementById('audioContainer');
+
+            if (!text) {
+                error.textContent = 'Please enter some text to convert!';
+                error.style.display = 'block';
+                return;
+            }
+
+            // Reset UI
+            error.style.display = 'none';
+            audioContainer.innerHTML = '';
+            convertBtn.disabled = true;
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch(
+                    `${STREAMLIT_URL}?text=${encodeURIComponent(text)}&language=${language}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success' && data.audio) {
+                    // Create audio element
+                    const audio = document.createElement('audio');
+                    audio.controls = true;
+                    audio.src = `data:audio/mp3;base64,${data.audio}`;
+                    
+                    // Create download button
+                    const downloadBtn = document.createElement('a');
+                    downloadBtn.href = `data:audio/mp3;base64,${data.audio}`;
+                    downloadBtn.download = 'speech.mp3';
+                    downloadBtn.className = 'download-btn';
+                    downloadBtn.textContent = 'Download Audio';
+
+                    audioContainer.appendChild(audio);
+                    audioContainer.appendChild(downloadBtn);
+
+                    // Auto-play audio
+                    audio.play().catch(e => console.log('Auto-play prevented:', e));
+                } else {
+                    throw new Error(data.message || 'Conversion failed');
+                }
+            } catch (err) {
+                error.textContent = `Error: ${err.message || 'Something went wrong. Please try again.'}`;
+                error.style.display = 'block';
+            } finally {
+                convertBtn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // Event Listeners
+        document.getElementById('convertBtn').addEventListener('click', convertToSpeech);
+        
+        document.getElementById('text').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                convertToSpeech();
+            }
+        });
+
+        // Clear error message when user starts typing
+        document.getElementById('text').addEventListener('input', function() {
+            document.getElementById('error').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
